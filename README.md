@@ -17,6 +17,8 @@ I wrote the following reports:
   Specification](https://github.com/salazar/luaio/blob/master/docs/r4_api.txt)
   * Report 5: [Project 
   Schedule](https://github.com/salazar/luaio/blob/master/docs/r5_schedule.txt)
+  * Report 6: [Socket module
+  API](https://github.com/salazar/luaio/blob/master/docs/r6_final_socket_api.txt)
 
 'src' contains source code
   * io: port of Lua 'io' module to NetBSD kernel Lua
