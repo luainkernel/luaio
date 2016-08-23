@@ -8,6 +8,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+/* our kernel 'stdio' :) */
 #include <stdio.h>
 
 MODULE(MODULE_CLASS_MISC, luasocket, "lua");
@@ -169,6 +170,44 @@ socket_listen(lua_State *L)
 }
 
 static int
+socket_accept(lua_State *L)
+{
+	struct luasocket *l;
+
+	l = checksock(L, 1);
+	lua_pushboolean(L, soaccept(l->so, NULL) == 0);
+
+	return 1;
+}
+
+static int
+socket_shutdown(lua_State *L)
+{
+	struct luasocket *l;
+	const char *howstr;
+	int how;
+
+	l = checksock(L, 1);
+	howstr = luaL_checkstring(L, 2);
+
+	/* disallow further receives */
+	if (strcmp(howstr, "recv") == 0)
+		how = 0;
+	/* disallow further sends */
+	else if (strcmp(howstr, "send") == 0)
+		how = 1;
+	/* disallow further sends & receives */
+	else
+		how = 2;
+
+	solock(l->so);
+	lua_pushboolean(L, soshutdown(l->so, how));
+	sounlock(l->so);
+
+	return 1;
+}
+
+static int
 socket_write(lua_State *L)
 {
 	struct luasocket* luasocket;
@@ -221,6 +260,8 @@ luaopen_socket(lua_State *L)
 		{"bind", socket_bind},
 		{"connect", socket_connect},
 		{"listen", socket_listen},
+		{"accept", socket_accept},
+		{"shutdown", socket_shutdown},
 		{"close", socket_close},
 		{"write", socket_write},
 		{"read", socket_read},
