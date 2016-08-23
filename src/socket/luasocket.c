@@ -42,6 +42,7 @@ socket_new(lua_State *L, int domain, int type)
 
 	lsock = new_lsocket(L);
 	fsocreate(domain, &lsock->so, type, 0, &lsock->fd);
+	lsock->dom = domain;
 
 	return 1;
 }
@@ -67,8 +68,6 @@ socket_local(lua_State *L)
 static int
 socket_raw(lua_State *L)
 {
-	/* XXX: socket_new assumes 0 for protocol, which in this case 
-	 * is equivalent to IPPROTO_IP */
 	return socket_new(L, AF_INET, SOCK_RAW);
 }
 
@@ -140,7 +139,11 @@ socket_bindOrConn(BindOrConnect bindOrConn, lua_State *L)
 		}
 	}
 
-	lua_pushboolean(L, err);
+	if (err == 0)
+		lua_pushvalue(L, 1);
+	else
+		lua_pushnil(L);
+
 	return 1;
 }
 
@@ -164,7 +167,11 @@ socket_listen(lua_State *L)
 
 	l = checksock(L, 1);
 	bl = luaL_checkinteger(L, 2);
-	lua_pushboolean(L, solisten(l->so, bl, curlwp) == 0);
+
+	if(solisten(l->so, bl, curlwp) == 0)
+		lua_pushvalue(L, 1);
+	else
+		lua_pushnil(L);
 
 	return 1;
 }
@@ -175,7 +182,11 @@ socket_accept(lua_State *L)
 	struct luasocket *l;
 
 	l = checksock(L, 1);
-	lua_pushboolean(L, soaccept(l->so, NULL) == 0);
+
+	if (soaccept(l->so, NULL) == 0)
+		lua_pushvalue(L, 1);
+	else
+		lua_pushnil(L);
 
 	return 1;
 }
@@ -265,6 +276,7 @@ luaopen_socket(lua_State *L)
 		{"close", socket_close},
 		{"write", socket_write},
 		{"read", socket_read},
+		{"__gc", socket_close},
 		{NULL, NULL}
 	};
 
