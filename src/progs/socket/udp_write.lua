@@ -1,8 +1,3 @@
-local socket = require'socket'
+-- write stuff to UDP socket
 
-local s = socket.new("inet4", "dgram")
-
-s:connect("192.168.33.1", 8080)
-print("written: " .. s:write("alo"))
-
-s:close()
+print(require'socket'.udp():connect("192.168.33.1", 8080):write("alo"))

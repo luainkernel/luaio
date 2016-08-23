@@ -1,8 +1,3 @@
-local socket = require'socket'
+-- read stuff from UDP socket
 
-local s = socket.new("inet4", "dgram")
-
-s:bind("192.168.33.11", 8080)
-print("read: " .. s:read())
-
-s:close()
+print("read = " .. require'socket'.udp():bind("192.168.33.11", 8080):read())
