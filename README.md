@@ -2,7 +2,6 @@
 
 ### luaio - kernel Lua I/O API
 
-
 I'm building NetBSD kernel I/O (files and sockets) bindings for kernel Lua 
 under [lneto](https://github.com/lneto)'s mentorship.
 
@@ -20,15 +19,9 @@ I wrote the following reports:
   Schedule](https://github.com/salazar/luaio/blob/master/docs/r5_schedule.txt)
 
 'src' contains source code
-
-  * libs: general I/O code used to implement the Lua bindings
-    - root: io.{c,h} is the general I/O code; e.g., contains 'write' and
-      'read' calls to deal with regular files and read/write
-    - sys: bits of code I had to adapt from the NetBSD tree
-    - sockets: code specific to socket kernel object represented by a
-      file descriptor
-  * bindings: kernel Lua bindings; they are loadable kernel modules
-  * staging: contains any code I wrote to see how things work; not (yet)
-    meant to be in 'src'
+  * io: port of Lua 'io' module to NetBSD kernel Lua
+  * socket: socket library to kernel Lua
+  * staging: contains any code I wrote to see how things work
+  * progs: some Lua programs using io and socket libraries
 
 https://goo.gl/g8Mb2M
