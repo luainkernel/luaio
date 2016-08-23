@@ -179,14 +179,18 @@ socket_listen(lua_State *L)
 static int
 socket_accept(lua_State *L)
 {
-	struct luasocket *l;
+	struct luasocket *l, *cli;
+	struct sockaddr_in sockaddr;
+	int csfd;
 
 	l = checksock(L, 1);
+	cli = new_lsocket(L);
 
-	if (soaccept(l->so, NULL) == 0)
-		lua_pushvalue(L, 1);
-	else
-		lua_pushnil(L);
+	solock(l->so);
+	csfd = soaccept(l->so, (struct sockaddr*) &sockaddr);
+	sounlock(l->so);
+
+	cli->fd = csfd;
 
 	return 1;
 }
