@@ -7,8 +7,8 @@
 #include <sys/filedesc.h>
 #include <sys/syscallargs.h>
 #include <sys/vfs_syscalls.h>
+#include <sys/systm.h>
 
-#include "sys/sys_generic.h"
 #include "tmpnam.h"
 
 #define EOF	-1
@@ -30,7 +30,7 @@ static int mode2flag(const char *mode) {
 	else if (*mode == 'w')
 		flag = O_WRONLY;
 	else if (*mode == 'a')
-		flag |= O_WRONLY | O_APPEND;
+		flag = O_WRONLY | O_APPEND;
 	if (*(mode + 1) != '\0' && *(mode + 1) == '+') {
 		flag = O_RDWR;
 		if (*mode == 'a')
@@ -43,9 +43,12 @@ static int mode2flag(const char *mode) {
 
 inline static long open(const char *path, int flags) {
 	int fd;
+	int eno;
 
-	if (fd_open(path, flags, ACCESSPERMS, &fd))
+	if ((eno = fd_open(path, flags, ACCESSPERMS, &fd)) != 0) {
+		printf("Error while opening: %d\n, path received:%s\n", eno, path);
 		return -1;
+	}
 	return fd;
 
 }
@@ -61,13 +64,16 @@ inline static int close(int fd) {
 inline static ssize_t read(int fd, void *buf, size_t count) {
 	ssize_t ret;
 	file_t *fp;
+	int eno;
 
 	if ((fp = fd_getfile(fd)) == NULL)
 		return (EBADF);
 
-	if (_dofileread(fd, fp, buf, count, &fp->f_offset, FOF_UPDATE_OFFSET,
-	    &ret))
+	eno = dofileread(fd, fp, buf, count, &fp->f_offset, FOF_UPDATE_OFFSET, &ret);
+	if (eno) {
+		printf("!!dofileread returned %d\n", eno);
 		return -1;
+	}
 	return ret;
 
 }
@@ -76,13 +82,17 @@ inline static ssize_t read(int fd, void *buf, size_t count) {
 inline static ssize_t write(int fd, const void *buf, size_t count) {
 	ssize_t ret;
 	file_t *fp;
+	int eno;
 
 	if ((fp = fd_getfile(fd)) == NULL)
 	return (EBADF);
 
-	if (_dofilewrite(fd, fp, buf, count, &fp->f_offset, FOF_UPDATE_OFFSET,
-	    &ret))
+	eno = dofilewrite(fd, fp, buf, count, &fp->f_offset, FOF_UPDATE_OFFSET, &ret);
+	if (eno)
+	{
+		printf("!!dofilewrite returned %d\n", eno);
 		return -1;
+	}
 	return ret;
 
 }
