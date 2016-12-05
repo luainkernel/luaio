@@ -23,8 +23,8 @@
 #define fflush(fd)	0
 #define clearerr(fd)
 
-static int mode2flag(const char *mode) {
-	int flag;
+inline int mode2flag(const char *mode) {
+	int flag = O_RDONLY;
 	if (*mode == 'r')
 		flag = O_RDONLY;
 	else if (*mode == 'w')
